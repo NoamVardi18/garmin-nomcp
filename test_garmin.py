@@ -74,8 +74,39 @@ def test_live_call():
     return name
 
 
+
+def test_digest_renders_without_crashing():
+    """A rest day, a missing night and a null metric must all render, not raise."""
+    import daily_digest as dd
+
+    empty = {"activities": [], "summary": {}, "sleep": {}, "readiness": [], "status": {}}
+    msg, substantive = dd.render("2026-09-03", empty)
+    assert "אין אימון רשום היום" in msg
+    assert "אין נתוני שינה" in msg
+    assert substantive is False, "an empty day must not trigger a send"
+
+    full = {
+        "activities": [{"activityType": {"typeKey": "running"}, "distance": 10000.0,
+                        "duration": 3000.0, "averageHR": 150.0, "activityTrainingLoad": 90.0}],
+        "summary": {"totalSteps": 12000, "totalKilocalories": 2500.0,
+                    "moderateIntensityMinutes": 10, "vigorousIntensityMinutes": 20},
+        "sleep": {"sleep_hours": 6.5, "sleep_score": 70, "sleep_score_qualifier": "FAIR"},
+        "readiness": [{"context": "AFTER_WAKEUP_RESET", "score": 40, "level": "POOR",
+                       "sleep_factor_percent": 31, "hrv_factor_percent": 90}],
+        "status": {"acute_load": 451, "chronic_load": 469, "load_ratio": 0.9,
+                   "acwr_status": "OPTIMAL", "vo2_max_precise": 57.8},
+    }
+    msg, substantive = dd.render("2026-09-04", full)
+    assert substantive is True
+    assert "5:00 לק\"מ" in msg, msg          # 10km in 50min
+    assert "דקות עצימות 50" in msg           # moderate + 2x vigorous
+    assert "ירודה" in msg                    # POOR is below LOW on Garmin's ladder
+    assert "שינה 31%" in msg                 # names the factor dragging readiness down
+
+
 if __name__ == "__main__":
-    offline = [test_arg_parsing, test_unwrap, test_collector_matches_mcp_registration]
+    offline = [test_arg_parsing, test_unwrap, test_collector_matches_mcp_registration,
+               test_digest_renders_without_crashing]
     for check in offline:
         check()
         print(f"ok  {check.__name__}")
