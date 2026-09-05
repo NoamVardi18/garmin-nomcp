@@ -1,0 +1,6 @@
+#!/bin/sh
+# Launcher so `garmin <anything>` works from any directory, any shell, cron
+# included — no venv activation, no PATH assumptions, no remembering where this
+# lives. Symlink it onto your PATH:  ln -s "$PWD/garmin" /usr/local/bin/garmin
+here=$(cd "$(dirname "$(readlink "$0" || echo "$0")")" && pwd)
+exec "$here/.venv/bin/python" "$here/garmin.py" "$@"
