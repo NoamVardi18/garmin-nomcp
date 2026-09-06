@@ -193,7 +193,7 @@ def _weakest_factor(readiness: dict) -> str | None:
 def _load_env_file(path: str) -> dict:
     cfg = {}
     try:
-        with open(os.path.expanduser(path)) as fh:
+        with open(os.path.expanduser(path), encoding="utf-8") as fh:
             for line in fh:
                 if "=" in line and not line.lstrip().startswith("#"):
                     k, _, v = line.partition("=")
@@ -261,6 +261,7 @@ def main() -> int:
     parser.add_argument("--always", action="store_true",
                         help="send even when the day has nothing in it")
     args = parser.parse_args()
+    garmin.force_utf8_stdio()
 
     message, substantive = render(args.date, collect(args.date))
     print(message)
