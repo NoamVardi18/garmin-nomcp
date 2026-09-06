@@ -44,13 +44,35 @@ The approach is not Garmin-specific. Most FastMCP servers are shaped this way.
 
 ## Install
 
+**macOS / Linux**
+
 ```sh
 git clone https://github.com/NoamVardi18/garmin-nomcp
 cd garmin-nomcp
-./setup.sh          # venv + deps + self-check
+./setup.sh                # venv + deps + self-check
+./setup.sh --slim         # ~30 MB smaller, see below
 ```
 
-Needs Python 3.12. Uses [uv](https://docs.astral.sh/uv/) when it is installed and falls back to stdlib `venv` + `pip` when it is not.
+Uses [uv](https://docs.astral.sh/uv/) when it is installed and falls back to stdlib `venv` + `pip` when it is not.
+
+**Windows**
+
+```powershell
+git clone https://github.com/NoamVardi18/garmin-nomcp
+cd garmin-nomcp
+.\setup.ps1               # or: .\setup.ps1 -Slim
+.\garmin.cmd doctor
+```
+
+`garmin.cmd` is the launcher — use it wherever this README says `./garmin`. Add the repo folder to your PATH and `garmin doctor` works from anywhere.
+
+Both need Python 3.12+.
+
+### Slim install
+
+`garmin_mcp/__init__.py` imports `FastMCP` at module level, and nothing this script calls ever touches it. When the `mcp` package is missing, `garmin.py` satisfies that one import with a stub rather than requiring it — which drops `mcp`, `pydantic`, `starlette`, `uvicorn` and the rest of the server-side tree. On a pip-installed Linux host that is **97 MB → 63 MB**, with all 148 tools still working.
+
+`--slim` / `-Slim` installs everything and then removes that tree. If `mcp` *is* installed, the real import happens as before, so behaviour never differs between the two.
 
 ## Auth
 
