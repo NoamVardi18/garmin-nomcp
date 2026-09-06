@@ -233,7 +233,8 @@ def send(text: str) -> None:
         node = shutil.which("node")
         if node:
             result = subprocess.run([node, TG_NOTIFY, text, "--he"],
-                                    capture_output=True, text=True, timeout=60)
+                                    capture_output=True, text=True, timeout=60,
+                                    encoding="utf-8", errors="replace")
             if result.returncode == 0:
                 print("sent → tg-notify", file=sys.stderr)
                 return

@@ -64,6 +64,22 @@ cd garmin-nomcp
 .\garmin.cmd doctor
 ```
 
+If PowerShell answers *"running scripts is disabled on this system"*, that is Windows' default execution policy, not a fault in the script. Either allow local scripts once (`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`) or bypass it for this one file:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+Needs `git` on PATH — pip resolves the dependency from GitHub, and Windows does not ship git. `setup.ps1` checks for it and says so up front.
+
+Or skip the script entirely — these three lines are all it does, and they cannot trip an execution policy:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install "garmin-mcp @ git+https://github.com/Taxuspt/garmin_mcp" "garminconnect==0.3.2"
+.venv\Scripts\python test_garmin.py
+```
+
 `garmin.cmd` is the launcher — use it wherever this README says `./garmin`. Add the repo folder to your PATH and `garmin doctor` works from anywhere.
 
 Both need Python 3.12+.
@@ -84,7 +100,9 @@ First time, or when they expire:
 ./garmin login      # email + password + MFA, once
 ```
 
-Credentials are never stored — only the tokens, `chmod 700`.
+Credentials are never stored — only the tokens.
+
+On macOS and Linux the token directory is `chmod 700`. **On Windows it is not actually restricted:** Python's `os.chmod` only toggles the read-only bit there and does not touch NTFS ACLs, so the tokens inherit whatever your user profile grants. They are ~6-month bearer credentials to the whole Garmin account — on a shared Windows machine, lock the folder down yourself (`icacls`) or point `GARMINTOKENS` somewhere you control.
 
 ## Use
 

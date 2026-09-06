@@ -159,6 +159,11 @@ def test_digest_renders_without_crashing():
 
 
 if __name__ == "__main__":
+    # A failing assertion below carries Hebrew in its message; on a legacy
+    # Windows console printing that traceback would itself raise and hide
+    # the real failure.
+    garmin.force_utf8_stdio()
+
     offline = [test_arg_parsing, test_unwrap, test_collector_matches_mcp_registration,
                test_digest_renders_without_crashing,
                test_mcp_stub_satisfies_the_only_import_that_needs_it,
